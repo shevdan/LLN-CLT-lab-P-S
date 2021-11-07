@@ -64,7 +64,7 @@ output:
 ```{r}
 # your team id number
                           ###
-id <- 50                  ### Change to the correct id!
+id <- 10                  ### Change to the correct id!
                           ###
 set.seed(id)
 p <- id / 100
@@ -130,7 +130,7 @@ __Do not forget to include several sentences summarizing your work and the concl
 ```{r}
 set.seed(10)
 lambda <- log(2) / 949233600; #30.1 years converted to seconds
-mass <- 10 * 10 ** -6;
+mass <- id * 10 ** -6;
 N <- mass / 136.9 * 6 * 10**23;  # number of molecules. Molecular mass of Cs-137 is 136.9
 mu <- N * lambda   #poisson rv parameter mu is N*lambda
 K <- 1e3
