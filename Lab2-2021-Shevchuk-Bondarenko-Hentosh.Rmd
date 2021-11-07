@@ -129,28 +129,18 @@ __Do not forget to include several sentences summarizing your work and the concl
 
 ```{r}
 set.seed(10)
-lambda <- log(2)/949233600; lambda #30.1 years converted to seconds
-mass = 10 * 10 ** -6; mass
-N <- mass / 136.9 * 6 * 10**23; N #number of molecules. Molecular mass of Cs-137 is 136.9
-mu <- N * lambda; mu   #poisson rv parameter mu is N*lambda
+lambda <- log(2)/949233600; #30.1 years converted to seconds
+mass = 10 * 10 ** -6;
+N <- mass / 136.9 * 6 * 10**23; #number of molecules. Molecular mass of Cs-137 is 136.9
+mu <- N * lambda   #poisson rv parameter mu is N*lambda
 K <- 1e3
-n <- 50
+n <- 5
 sample_means <- colMeans(matrix(rpois(n*K, lambda = mu), nrow=n))
-print(" ")
-mean(sample_means)
-sd(sample_means)
 
 test = rpois(10000, mu)
-x <- seq(min(test),max(test), by = 1); length(x)
+x <- seq(min(test),max(test))
 
 plot(x, dpois(seq(min(test),max(test)), mu))
-
-
-mean(test)
-mu
-sd(test)
-sd(test) ** 2
-sqrt(mu)
 
 
 plot(x, dnorm(x, mean = mu, sd = sqrt(mu)))
@@ -169,6 +159,7 @@ sigma <- sqrt(mu) / sqrt(n) #since sigma is standard deviation, sd = sqrt(var)
 ```
 
 #### We can now plot ecdf and cdf
+
 
 ```{r}
 set.seed(10)
@@ -190,6 +181,7 @@ curve(pnorm(x, mean = mu, sd = sigma), col = "red", lwd = 2, add = TRUE)
 diff <- max(abs(Fs(x)-pnorm(x, mean = mu, sd = sigma)))
 diff
 
+
 # for n = 5 diff = 0.019, n = 10 : diff = 0.02, n = 50: diff = 0.037, n = 500: diff = 0.016
 #overall, empirical cdf of the experiment if very close to the cdf of the normal distribution to which poisson converges to
 ```
@@ -198,14 +190,13 @@ __Next, proceed with all the remaining steps__
 
 
 ```{r}
+
+# Iteratively looking for max n for which correlation of sums < 8e8 to all sums is more than 0.95
 set.seed(10)
 for(i in 1:100){
   n <- i
-  sample_sums = colSums(matrix(rpois(n * K, lambda = mu), nrow=n)); length(sample_sums)
-  mean(sample_sums)
-  max(sample_sums)
+  sample_sums <- colSums(matrix(rpois(n * K, lambda = mu), nrow=n)); length(sample_sums)
   corr <- length(sample_sums[sample_sums < 8e8]) / length(sample_sums)
-  print(c(corr, i, mean(sample_sums)))
   if (corr < 0.95){
     n <- i - 1
     break
@@ -213,7 +204,7 @@ for(i in 1:100){
 
 }
 
-
+#check the found n by Markov inequality, Chebyshev inequality and CLT
 
 mean(rpois(n, mu)) / 8e8  # Markov's inequality
 
@@ -266,22 +257,28 @@ Markov's inequality, Chernoff bound and CLT which proved the accuracy of experim
 #### First, generate samples an sample means: 
 
 ```{r}
-nu1 <- 1  # change this!
+set.seed(10)
+nu1 <- 20 # team id 10 + 10
 K <- 1e3
-n <- 5
+n <- 10
 sample_means <- colMeans(matrix(rexp(n*K, rate = nu1), nrow=n))
 ```
 
 #### Next, calculate the parameters of the standard normal approximation
 
 ```{r}
-mu <- 0       # change this!
-sigma <- 1    # change this!
+# sample means is an array of M - rv of sum of rvs / n. According to CLT it converges to normal distribution with parameters
+#mean and var of this M
+mu <- mean(sample_means)      
+sigma <- sd(sample_means)   
 ```
 
 #### We can now plot ecdf and cdf
 
 ```{r}
+set.seed(10)
+x <- sample_means
+
 xlims <- c(mu-3*sigma,mu+3*sigma)
 Fs <- ecdf(sample_means)
 plot(Fs, 
@@ -290,9 +287,72 @@ plot(Fs,
      lwd = 2,
      main = "Comparison of ecdf and cdf")
 curve(pnorm(x, mean = mu, sd = sigma), col = "red", lwd = 2, add = TRUE)
+
+
+#now find max distance between empirical cdf and cdf of the normal distribution - difference
+diff <- max(abs(Fs(x)-pnorm(x, mean = mu, sd = sigma)))
+diff
+
+# for n = 5 diff = 0.08, n = 10 : diff = 0.064, n = 50: diff = 0.029, n = 500: diff = 0.022
+#overall, empirical cdf of the experiment if very close to the cdf of the normal distribution to which sample_means converges
 ```
 
 __Next, proceed with all the remaining steps__
+
+
+
+```{r}
+# NOT WORKING!
+
+# Iteratively looking for max n for which correlation of sums < 60 to all sums is more than 0.95
+set.seed(10)
+for(i in 1:10000){
+  n <- i
+  sample_sums <- colSums(matrix(rexp(n*K, rate = nu1), nrow=n)); length(sample_sums)
+  mean(sample_sums)
+  max(sample_sums)
+  corr <- length(sample_sums[sample_sums < 60]) / length(sample_sums)
+  if (corr < 0.95){
+    print(c(corr, i))
+    n <- i - 1
+    break
+  }
+}
+n
+
+```
+
+```{r}
+#check the found n by Markov inequality, Chebyshev inequality and CLT
+set.seed(10)
+#Markov inequality
+mean(pexp(n, nu1)) / 60
+
+#Chebyshev inequality
+
+var(rexp(n, nu1)) / (60 - mean(rexp(n, nu1))) ** 2
+
+#CLT
+
+sample_sums = colSums(matrix(rexp(n*K, rate = nu1), nrow=n))
+
+test_clt <- (60 + n* mean(sample_sums)) / ((sample_sums) * sqrt(n))
+
+pnorm(test_clt, mean = mean(sample_sums), sd = sd(sample_sums))[1]
+
+```
+```{r}
+
+# Check the correlation of sums < 60 to all the sums for a found n
+set.seed(10)
+n
+sample_sums = colSums(matrix(rexp(1143*K, rate = nu1), nrow=1143))
+corr <- length(sample_sums[sample_sums < 60]) / length(sample_sums)
+corr
+
+```
+
+
 
 
 __Do not forget to include several sentences summarizing your work and the conclusions you have made!__ 
