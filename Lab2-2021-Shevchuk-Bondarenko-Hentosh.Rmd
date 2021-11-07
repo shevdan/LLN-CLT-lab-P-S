@@ -196,11 +196,7 @@ set.seed(10)
 for(i in 1:100){
   n <- i
   sample_sums <- colSums(matrix(rpois(n * K, lambda = mu), nrow=n)); length(sample_sums)
-<<<<<<< HEAD
-=======
-  mean(sample_sums)
-  max(sample_sums)
->>>>>>> d8950703b6da052feabf6d4995ae72bccc5c9af6
+
   corr <- length(sample_sums[sample_sums < 8e8]) / length(sample_sums)
   if (corr < 0.95){
     n <- i - 1
