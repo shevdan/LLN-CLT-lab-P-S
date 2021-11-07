@@ -304,53 +304,6 @@ diff
 
 __Next, proceed with all the remaining steps__
 
-```{r}
-
-#Not working yet :/
-
-bin_search <- function(arr, K, nu1, max_val){
-
-  mid = length(arr) %/% 2 + 1
-  n <- mid
-  sample_sums <- colSums(matrix(rexp(arr[n]*K, rate = nu1), nrow=arr[n])); length(sample_sums)
-  corr <- length(sample_sums[sample_sums < max_val]) / length(sample_sums)
-  if (corr < 0.95){
-    sample_sums2 <- colSums(matrix(rexp(arr[(n - 1)]*K, rate = nu1), nrow=arr[n - 1])); length(sample_sums)
-    if (length(sample_sums[sample_sums < max_val]) / length(sample_sums) < 0.95){
-      
-      print(n)
-      print("")
-      print(arr[n - 1])
-      print(arr[n])
-      return (bin_search(arr[1:mid], K, nu1, max_val))
-    }
-    else{
-      return(n)
-    }
-  }
-  if (corr > 0.95){
-    sample_sums2 <- colSums(matrix(rexp(arr[(n + 1)]*K, rate = nu1), nrow=arr[n + 1])); length(sample_sums)
-    if (length(sample_sums[sample_sums < max_val]) / length(sample_sums) < 0.95){
-      return(arr[n])
-    }
-    else{
-      print(n)
-      print("")
-      print(arr[n + 1])
-      print(arr[n])
-      
-      return(bin_search(arr[mid:length(arr)], K, nu1, max_val))
-    }
-  }
-}
-
-```
-
-```{r}
-bin_search(seq(1,2000), K, nu1, 60)
-
-```
-
 
 ```{r}
 # NOT WORKING!
@@ -455,7 +408,7 @@ set.seed(10)
 n
 sample_sums = colSums(matrix(rexp(1143*K, rate = nu1), nrow=1143))
 corr <- length(sample_sums[sample_sums < 60]) / length(sample_sums)
-corr
+
 
 ```
 
