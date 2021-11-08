@@ -417,3 +417,6 @@ __Do not forget to include several sentences summarizing your work and the concl
 ### General summary and conclusions
 
 SUmmarize here what you've done, whether you solved the tasks, what difficulties you had etc
+
+
+We have solved tasks 2. During the implementation of the lab we have encountered numerous problems concerning new programming language - r. We have obtained a deeper understanding of notions of probability, their usage and ways of conducting own experiments. 
