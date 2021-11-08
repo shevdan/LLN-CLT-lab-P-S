@@ -22,7 +22,7 @@ output:
 
 ### Task 1
 
-#### In this task, we discuss the \([7,4]\) Hamming code and investigate its reliability. That coding system  can correct single errors in the transmission of \(4\)-bit messages and proceeds as follows:   
+#### In this task, we discuss the \([7,4]\) Hamming code and investigate its reliability. That coding system	can correct single errors in the transmission of \(4\)-bit messages and proceeds as follows:   
 
 * given a message \(\mathbf{m} = (a_1 a_2 a_3 a_4)\), we first encode it to a \(7\)-bit _codeword_ \(\mathbf{c} = \mathbf{m}G = (x_1 x_2 x_3 x_4 x_5 x_6 x_7)\), where \(G\) is a \(4\times 7\) _generator_ matrix  
 * the codeword \(\mathbf{c}\) is transmitted, and \(\mathbf{r}\) is the received message  
@@ -32,20 +32,20 @@ output:
 * the decoded message is then \(\mathbf{m}^*:= (r_3r_5r_6r_7)\). 
   
 #### The __generator__ matrix \(G\) and the __parity-check__ matrix \(H\) are given by
-\[  
-  G := 
-  \begin{pmatrix}
-    1 & 1 & 1 & 0 & 0 & 0 & 0 \\
-    1 & 0 & 0 & 1 & 1 & 0 & 0 \\
-    0 & 1 & 0 & 1 & 0 & 1 & 0 \\
-    1 & 1 & 0 & 1 & 0 & 0 & 1 \\
-  \end{pmatrix},
+\[	
+	G := 
+	\begin{pmatrix}
+		1 & 1 & 1 & 0 & 0 & 0 & 0 \\
+		1 & 0 & 0 & 1 & 1 & 0 & 0 \\
+		0 & 1 & 0 & 1 & 0 & 1 & 0 \\
+		1 & 1 & 0 & 1 & 0 & 0 & 1 \\
+	\end{pmatrix},
  \qquad 
-  H^\top := \begin{pmatrix}
-    1 & 0 & 1 & 0 & 1 & 0 & 1 \\
-    0 & 1 & 1 & 0 & 0 & 1 & 1 \\
-    0 & 0 & 0 & 1 & 1 & 1 & 1
-  \end{pmatrix}
+	H^\top := \begin{pmatrix}
+		1 & 0 & 1 & 0 & 1 & 0 & 1 \\
+		0 & 1 & 1 & 0 & 0 & 1 & 1 \\
+		0 & 0 & 0 & 1 & 1 & 1 & 1
+	\end{pmatrix}
 \]
 
 
@@ -62,26 +62,27 @@ output:
 #### First, we set the **id** of the team and define the probability \(p\) and the generator and parity-check matrices \(G\) and \(H\)
 
 ```{r}
-# your team id number
+# your team id number 
                           ###
 id <- 10                  ### Change to the correct id!
                           ###
 set.seed(id)
-p <- id / 100
+p <- id/100
+l <- 2000 ## max num of messages tested
 # matrices G and H
 G <- matrix(c(1, 1, 1, 0, 0, 0, 0,
-    1, 0, 0, 1, 1, 0, 0,
-    0, 1, 0, 1, 0, 1, 0,
-    1, 1, 0, 1, 0, 0, 1), nrow = 4, byrow = TRUE)
+		1, 0, 0, 1, 1, 0, 0,
+		0, 1, 0, 1, 0, 1, 0,
+		1, 1, 0, 1, 0, 0, 1), nrow = 4, byrow = TRUE)
 H <- t(matrix(c(1, 0, 1, 0, 1, 0, 1,
-    0, 1, 1, 0, 0, 1, 1,
-    0, 0, 0, 1, 1, 1, 1), nrow = 3, byrow = TRUE))
+		0, 1, 1, 0, 0, 1, 1,
+		0, 0, 0, 1, 1, 1, 1), nrow = 3, byrow = TRUE))
 # cat("The matrix G is: \n") 
-#G
-# cat("The matrix H is: \n") 
+#G  
+#cat("The matrix H is: \n") 
 #H
-# cat("The product GH must be zero: \n")
-# (G%*%H) %%2
+cat("The product GH must be zero: \n")
+(G%*%H) %%2
 ```
 
 #### Next, generate the messages
@@ -92,18 +93,147 @@ H <- t(matrix(c(1, 0, 1, 0, 1, 0, 1,
 message_generator <- function(N) {
   matrix(sample(c(0,1), 4*N, replace = TRUE), nrow = N)
 }  
-messages <- message_generator(100)
-codewords <- (messages %*% G) %% 2
 ```
-#### Generate random errors; do not forget that they occur with probability \(p\)! Next, generate the received messages
+
 
 ```{r}
-#  errors <- ...
-#  received <-   
+# Functon to simulate encoding-transmission-decoding process
+# return the vector with number of errors in each message
+myfunc <- function(nim){
+    messages <- message_generator(nim)
+    codewords <- (messages %*% G) %% 2
+
+    for (i in 1:length(codewords[,1])){
+        for (bit in 1:length(codewords[i,])){
+            v <- sample(c(1, 0), 1, prob = c(p, 1-p), replace = T)
+            if (v == 1){
+                if (codewords[i,bit] == 1){
+                    codewords[i,bit] <- 0
+                } else {
+                    codewords[i,bit] <- 1
+                }
+            }
+        }
+    }
+    encoded <- messages
+    for (i in 1:length(codewords[,1])){
+        z <- (matrix(c(codewords[i,]), nrow = 1, byrow = TRUE)%*%H)%%2
+        num <- z[1,1] + 2*z[1,2] + 4*z[1,3]
+        if (num != 0){
+            if (codewords[i,num] == 1){
+                codewords[i,num] <- 0
+            } else {
+                codewords[i,num] <- 1
+            }
+        }
+        encoded[i,1] <- codewords[i,3]
+        encoded[i,2] <- codewords[i,5]
+        encoded[i,3] <- codewords[i,6]
+        encoded[i,4] <- codewords[i,7]
+    }
+    k<-0
+    k4<-c()
+    for(i in 1:length(encoded[,1])){
+        bo <- messages[i,]&encoded[i,]
+        for (j in 1:4){
+            if (bo[j] == TRUE){
+                bo[j] <-1
+            } else{
+                bo[j] <-0
+            }
+        }
+        if (sum(bo)==4){
+            k4 <- c(k4, 4)
+        }
+        if (sum(bo)==3){
+            k4 <- c(k4, 3)
+        }
+        if (sum(bo)==2){
+            k4 <- c(k4, 2)
+        }
+        if (sum(bo)==1){
+            k4 <- c(k4, 1)
+        }
+        if (sum(bo) != 0){
+            k <- k+1
+        } else{
+            k4 <- c(k4, 0)
+        }
+    }
+    return(k4)
+}
 ```
 
-The next steps include detecting the errors in the received messages, correcting them, and then decoding the obtained messages. After this, you can continue with calculating all the quantities of interest
 
+
+## 1. Draw a plot to estimate sample mean = p^
+# By the LLN p^ -> p*
+
+```{r}
+
+p_d <- c()
+for(m in 1:l){
+    t <- myfunc(m)
+    p_d <- c(p_d, sum(t)/m)
+}
+x_n <- seq(1/l,1,by=1/l)
+plot(x_n, p_d, col="red")
+y1 <- sum(p_d)/length(p_d)
+abline(h=y1, col="blue")
+```
+
+
+
+## 2. Choice of N
+
+* Let denote the successfully transmited message as 1 and unsuccessfully as 0
+* "I" is an indicator of success
+* I`s mean value = p*
+* And sample mean = p^
+
+* We need to prove that:
+* P{|p^ - p*|<= 0.03} >= 0.95
+
+* let consider:
+* Zn = (sqrt(n)*(p^ - p*))/dev
+* dev = sqrt(p(1-p))
+* Then we will find P{|p^ - p*|>= e}
+* P{|p^ - p*|>= e} = P{|Zn|>=sqrt(n)*e/sqrt(p(1-p))} = 2*P{Zn<=-sqrt(n)*e/sqrt(p(1-p))}
+* Using CLT, previous line ~ 2F(-sqrt(n)*e/sqrt(p(1-p)))
+* To make that be at most 0.05 with e <= 0.03 we need
+* sqrt(n)*e/sqrt(p(1-p)) >= 1.96
+* than we have
+* sqrt(n) >= 1.96/(2 * 0.03) and find the n
+
+
+```{r}
+dev <- sd(p_d)
+num <- length(p_d)
+eps = dev*1.96/sqrt(num)
+cat("Epsilon: ", eps)
+n <- (1.96/(2 * 0.03))**2
+cat("n should be at minimum: ", n)
+```
+
+
+## 3. Histogram
+```{r}
+h <- myfunc(l)
+hist(h,
+     breaks = -1:5,
+     main = paste("Histogram of the", round(l), "transmited messages",'\n' , "With total number of errors", sum(h)),
+     col = "lightblue",
+     xlab = "Values",
+     xlim = c(-1,4)
+     )
+```
+
+
+
+
+### General summary and conclusions
+
+Write something
 __Do not forget to include several sentences summarizing your work and the conclusions you have made!__ 
 
 
