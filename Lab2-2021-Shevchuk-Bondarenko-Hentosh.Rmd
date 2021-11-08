@@ -233,7 +233,14 @@ hist(h,
 
 ### General summary and conclusions
 
-Write something
+In this task we estimated sample mean = p^ and by drawing the plot we prouved than if n -> inf, p^ -> mean value(p*).
+If we want the difference between p^ and p* be less then 0.03 with pribability 0.95,
+then we should find the smalest n that such a condition is met P{|p^ - p*|<= 0.03} >= 0.95
+Using CLT we found this n
+Also as we can see from the histagram the most pipular number of errors in messages is 2, becaus it is hard for HC to find such errors
+But the message will be correctly transmited and decoded with prob. P*~0.9
+
+
 __Do not forget to include several sentences summarizing your work and the conclusions you have made!__ 
 
 
