@@ -461,15 +461,15 @@ log(desired_p)
 
 #### Iteratively looking for max n for which correlation of sums < 60 to all sums is more than 0.95
 ```{r}
-for (N in 1:10000) {
-    # get nu
-    nu <- nu1 * N
-    # get samples
-    samples <- matrix(rexp(n * K, rate = nu), nrow = n)
-    # get S
-    sample_sums <- colSums(samples)
+# for (N in 1:10000) {
+#     # get nu
+#     nu <- nu1 * N
+#     # get samples
+#     samples <- matrix(rexp(n * K, rate = nu), nrow = n)
+#     # get S
+#     sample_sums <- colSums(samples)
 
-}
+# }
 ```
 
 
