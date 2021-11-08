@@ -439,19 +439,19 @@ __Next, proceed with all the remaining steps__
 
 #### express the event of interest (S = sample_sums)
 ```{r}
-samples <- matrix(rexp(100 * K, rate = nu), nrow = 100)
-sample_sums <- colSums(samples)
+# samples <- matrix(rexp(100 * K, rate = nu), nrow = 100)
+# sample_sums <- colSums(samples)
 ```
 
 #### obtain the theoretical bounds on N
 ```{r}
-desired_p <- 0.95
-a <- 100
+# desired_p <- 0.95
+# a <- 100
 
 # Markov
 # Because P <= E(S) / a = n * (1 / nu1) / a => n = P * a * nu1
-n <- desired_p * a * nu1
-n
+# n <- desired_p * a * nu1
+# n
 
 # Chernoff
 # it tends to normal distribution N(mu, sigma^2)
@@ -460,7 +460,7 @@ n
 # mgf is exp(mu * t + sigma^2*t^2 / 2)
 # Because P <= E(e^tS) / e^ta = exp(mu * t + sigma^2*t^2 / 2) / exp(ta)
 # = exp((mu - a) * t + sigma^2 / 2 * t^2) = exp((n * (1 / nu1) - a) * t + (1 / nu1)^2 / 2 * t^2 * n)
-log(desired_p)
+# log(desired_p)
 
 
 ```
