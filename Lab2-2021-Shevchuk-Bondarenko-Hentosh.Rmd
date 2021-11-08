@@ -388,11 +388,12 @@ Markov's inequality, Chernoff bound and CLT which proved the accuracy of experim
 #### First, generate samples an sample means: 
 
 ```{r}
-set.seed(10)
-nu1 <- 20 # team id 10 + 10
+set.seed(id)
+nu1 <- id + 10  # team id 10 + 10
 K <- 1e3
 n <- 10
-sample_means <- colMeans(matrix(rexp(n * K, rate = nu1), nrow = n))
+samples <- matrix(rexp(n * K, rate = nu1), nrow = n)  # 1000 samples of 10 values
+sample_means <- colMeans(samples)
 ```
 
 #### Next, calculate the parameters of the standard normal approximation
@@ -400,14 +401,14 @@ sample_means <- colMeans(matrix(rexp(n * K, rate = nu1), nrow = n))
 ```{r}
 # sample means is an array of M - rv of sum of rvs / n. According to CLT it converges to normal distribution with parameters
 #mean and var of this M
-mu <- mean(sample_means)      
-sigma <- sd(sample_means)   
+mu <- 1 / nu1
+sigma <- 1 / nu1 / sqrt(n)
 ```
 
 #### We can now plot ecdf and cdf
 
 ```{r}
-set.seed(10)
+set.seed(id)
 x <- sample_means
 
 xlims <- c(mu - 3 * sigma, mu + 3 * sigma)
@@ -423,17 +424,57 @@ curve(pnorm(x, mean = mu, sd = sigma), col = "red", lwd = 2, add = TRUE)
 #now find max distance between empirical cdf and cdf of the normal distribution - difference
 diff <- max(abs(Fs(x) - pnorm(x, mean = mu, sd = sigma)))
 diff
-
-# for n = 5 diff = 0.08, n = 10 : diff = 0.064, n = 50: diff = 0.029, n = 500: diff = 0.022
-#overall, empirical cdf of the experiment if very close to the cdf of the normal distribution to which sample_means converges
 ```
+#### for n = 5 diff = 0.08, n = 10 : diff = 0.064, n = 50: diff = 0.029, n = 500: diff = 0.022
+#### overall, empirical cdf of the experiment if very close to the cdf of the normal distribution to which sample_means converges
 
 __Next, proceed with all the remaining steps__
+
+#### express the event of interest (S = sample_sums)
+```{r}
+samples <- matrix(rexp(100 * K, rate = nu), nrow = 100)
+sample_sums <- colSums(samples)
+```
+
+#### obtain the theoretical bounds on N
+```{r}
+desired_p <- 0.95
+a <- 100
+
+# Markov
+# Because P <= E(S) / a = n * (1 / nu1) / a => n = P * a * nu1
+n <- desired_p * a * nu1
+n
+
+# Chernoff
+# it tends to normal distribution N(mu, sigma^2)
+# mu = n * (1 / nu1)
+# sigma = (1 / nu1) / sqrt(n)
+# mgf is exp(mu * t + sigma^2*t^2 / 2)
+# Because P <= E(e^tS) / e^ta = exp(mu * t + sigma^2*t^2 / 2) / exp(ta)
+# = exp((mu - a) * t + sigma^2 / 2 * t^2) = exp((n * (1 / nu1) - a) * t + (1 / nu1)^2 / 2 * t^2 * n)
+log(desired_p)
+
+
+```
+
+
+#### Iteratively looking for max n for which correlation of sums < 60 to all sums is more than 0.95
+```{r}
+for (N in 1:10000) {
+    # get nu
+    nu <- nu1 * N
+    # get samples
+    samples <- matrix(rexp(n * K, rate = nu), nrow = n)
+    # get S
+    sample_sums <- colSums(samples)
+
+}
+```
 
 
 ```{r}
 # NOT WORKING!
-
 # Iteratively looking for max n for which correlation of sums < 60 to all sums is more than 0.95
 set.seed(10)
 for (i in 1:10000) {
